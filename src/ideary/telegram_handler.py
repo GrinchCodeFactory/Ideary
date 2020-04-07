@@ -1,11 +1,15 @@
+import json
 import logging
 import time
+from os.path import expanduser
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-from Ideary.src.key import Key
+
+with open(expanduser("~/.ideary-conf.json"), 'r') as fh:
+    conf = json.load(fh)
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -13,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-updater = Updater(token=Key.key, use_context=True)
+updater = Updater(token=conf['telegram']['token'], use_context=True)
 dispatcher = updater.dispatcher
 
 entryList = []
@@ -54,6 +58,7 @@ def getEntryById(update, context):
     else:
         logger.debug('Passed id is NOT a number')
         context.bot.send_message(chat_id=update.effective_chat.id, text='Passed ID is NOT a number')
+
 
 
 getLastNEntries_handler = CommandHandler('get', getEntryById)
