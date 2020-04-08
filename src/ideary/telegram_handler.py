@@ -3,12 +3,12 @@ import logging
 import time
 from os.path import expanduser
 
-from telegram.ext import Updater
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CallbackQueryHandler, ConversationHandler
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-
-with open(expanduser("~/.ideary-conf.json"), 'r') as fh:
+with open(expanduser("~/ideary-conf.json"), 'r') as fh:
     conf = json.load(fh)
 
 logging.basicConfig(level=logging.DEBUG,
@@ -32,7 +32,7 @@ def help(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="To get an entry type /get {id}")
 
 
-def addEntry(update, context):
+def addEntryByCommand(update, context):
     global entryList
 
     chatID = update.effective_chat.id
@@ -45,6 +45,24 @@ def addEntry(update, context):
 
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text='Entry has been added with ID: ' + str(len(entryList) - 1))
+
+
+def addEntry(update, context):
+    global entryList
+
+    chatID = update.effective_chat.id
+    text = update.message.text
+
+    ts = int(round(time.time() * 1000))
+
+    entry = {'id': len(entryList), 'text': text, 'ts': ts}
+
+    keyboard = [[InlineKeyboardButton("Add as entry", callback_data=json.dumps(entry)),
+                 InlineKeyboardButton("Do nothing", callback_data="{}")]]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
 
 def getEntryById(update, context):
@@ -60,18 +78,32 @@ def getEntryById(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text='Passed ID is NOT a number')
 
 
+def addAssEntry(update, context):
+    global entryList
+    query = update.callback_query
+    if len(query.data) > 2:
+        entry = json.loads(query.data)
+        entryList.append(entry)
+        query.edit_message_text(text='Entry has been added with ID: ' + str(len(entryList) - 1))
+        logger.debug("Added: " + str(entry))
+    else:
+        query.edit_message_text(text='Stop wasting my time you prick!')
+
+    query.answer()
+
 
 getLastNEntries_handler = CommandHandler('get', getEntryById)
 dispatcher.add_handler(getLastNEntries_handler)
 
-addEntry_handler = CommandHandler('add', addEntry)
-dispatcher.add_handler(addEntry_handler)
+addEntryByCommand_handler = CommandHandler('add', addEntryByCommand)
+dispatcher.add_handler(addEntryByCommand_handler)
 
 help_handler = CommandHandler('help', help)
 dispatcher.add_handler(help_handler)
 
-# echo_handler = MessageHandler(Filters.text, echo)
-# dispatcher.add_handler(echo_handler)
+addEntry_handler = MessageHandler(Filters.text, addEntry)
+dispatcher.add_handler(addEntry_handler)
 
+updater.dispatcher.add_handler(CallbackQueryHandler(addAssEntry))
 
 updater.start_polling()
