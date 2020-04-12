@@ -1,15 +1,18 @@
 import json
 import logging
 import time
-from os.path import expanduser
+from datetime import datetime
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CallbackQueryHandler, ConversationHandler
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
+from telegram.ext import Updater, CallbackQueryHandler
 
-with open(expanduser("~/ideary-conf.json"), 'r') as fh:
-    conf = json.load(fh)
+from src.ideary import read_conf
+from src.ideary.diary import DiaryEntry
+from src.ideary.storage import get_user_diary
+
+conf = read_conf()['telegram']
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -17,10 +20,10 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-updater = Updater(token=conf['telegram']['token'], use_context=True)
+updater = Updater(token=conf['token'], use_context=True)
 dispatcher = updater.dispatcher
 
-entryList = []
+# entryList = []
 
 
 def help(update, context):
@@ -33,18 +36,25 @@ def help(update, context):
 
 
 def addEntryByCommand(update, context):
-    global entryList
 
     chatID = update.effective_chat.id
     # 5: because of command length
     text = update.message.text[5:]
     ts = int(round(time.time() * 1000))
 
-    entryList.append({'id': len(entryList), 'text': text, 'ts': ts})
-    logger.debug("Added: " + str({'id': chatID, 'text': text, 'ts': ts}))
+    diary = get_user_diary(chatID)
+    entry = DiaryEntry(
+            number=diary.next_entry_number(),
+            text=text,
+            timestamp=datetime.fromtimestamp(ts/1000),
+            diary_id=diary.diary_id,
+        )
+    get_user_diary(chatID).add_entry(entry)
+
+    logger.debug("Added: %s", entry)
 
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text='Entry has been added with ID: ' + str(len(entryList) - 1))
+                             text='Entry has been added with ID: ' + str(entry.number))
 
 
 def addEntry(update, context):
@@ -72,7 +82,8 @@ def getEntryById(update, context):
 
     if n.isdigit():
         n = int(n)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=str(entryList[n]))
+        entry = get_user_diary(chatID).get_entry(n)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=str(entry))
     else:
         logger.debug('Passed id is NOT a number')
         context.bot.send_message(chat_id=update.effective_chat.id, text='Passed ID is NOT a number')
