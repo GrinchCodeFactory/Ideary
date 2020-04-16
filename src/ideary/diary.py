@@ -19,8 +19,8 @@ class DiaryEntry:
 class Diary:
 
     def __init__(self, diary_id, user_id):
-        self.diary_id = diary_id
-        self.user_id = user_id
+        self.diary_id = int(diary_id)
+        self.user_id = int(user_id)
 
     def add_entry(self, entry: DiaryEntry) -> DiaryEntry:
         import src.ideary.storage as storage

@@ -20,6 +20,7 @@ def write_diary(diary:Diary):
     )
 
 def get_user_diary(user_id) -> Diary:
+    user_id = int(user_id)
     return read_diary(user_id=user_id) or Diary(diary_id=user_id, user_id=user_id)
 
 

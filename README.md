@@ -29,3 +29,7 @@ telegram:
   token: abc
 ```
 
+
+
+# Playground
+* Resize large images

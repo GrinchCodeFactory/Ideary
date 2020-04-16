@@ -1,4 +1,3 @@
-import base64
 import json
 import logging
 import time
@@ -10,7 +9,7 @@ from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater, CallbackQueryHandler
 
 from src.ideary import read_conf
-from src.ideary.diary import DiaryEntry, Diary
+from src.ideary.diary import DiaryEntry
 from src.ideary.storage import get_user_diary
 
 conf = read_conf()['telegram']
@@ -169,9 +168,7 @@ def callbackHandler(update, context):
         logger.debug("Empty call back call")
 
 
-
 def doNothing(update, context, acdata):
-
     query = update.callback_query
 
     logger.debug("Just chillin, doing nothing")
@@ -182,7 +179,6 @@ def doNothing(update, context, acdata):
 
 
 def rejectEntry(update, context, callData):
-
     query = update.callback_query
 
     del ongoingCreation[callData]
@@ -195,7 +191,6 @@ def rejectEntry(update, context, callData):
 
 
 def saveEntry(update, context, callData):
-
     global ongoingCreation
 
     query = update.callback_query
@@ -204,7 +199,7 @@ def saveEntry(update, context, callData):
 
     diary = get_user_diary(callData)
 
-    entry.number = diary.next_entry_number(),
+    entry.number = diary.next_entry_number()
 
     get_user_diary(callData).add_entry(entry)
 
