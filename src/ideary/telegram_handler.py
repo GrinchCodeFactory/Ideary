@@ -73,7 +73,7 @@ def submit_creating_entry(chat_id: int, context):
     return entry
 
 
-def getEntryById(update, context:CallbackQuery):
+def getEntryById(update, context: CallbackQuery):
     chatID = update.effective_chat.id
     # 5: because of command length
     n = update.message.text[5:]
@@ -81,13 +81,33 @@ def getEntryById(update, context:CallbackQuery):
     if n.isdigit():
         n = int(n)
         entry = get_user_diary(chatID).get_entry(n)
-        if entry.image:
-            with get_media_content_stream(entry.image) as fh:
-                context.bot.send_photo(chat_id=chatID, photo=fh, caption=entry.text)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=str(entry))
+        if entry:
+            display_entry(update, context, entry)
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='Entry not found')
     else:
         logger.debug('Passed id is NOT a number')
         context.bot.send_message(chat_id=update.effective_chat.id, text='Passed ID is NOT a number')
+
+
+def display_entry(update, context, entry: DiaryEntry):
+    entry_number = "Entry number: " + str(entry.number)
+    entry_date = "\nDate: " + entry.timestamp.strftime("%A, %d %B %Y")
+    entry_tags = ""
+    if len(entry.tag_list) > 0:
+        entry_tags = "\nTags: "
+        for tag in entry.tag_list:
+            entry_tags = entry_tags + tag + ", "
+        entry_tags = entry_tags[:-2]
+
+    entry_text = "\n\nContent: " + entry.text
+
+    str_entry = entry_number + entry_date + entry_tags + entry_text
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=str_entry)
+    if entry.image:
+        with get_media_content_stream(entry.image) as fh:
+            context.bot.send_photo(chat_id=update.effective_chat.id, photo=fh)
 
 
 def addText(update, context):
@@ -115,7 +135,7 @@ def addTags(update, context):
     chatID = update.effective_chat.id
 
     entry = get_creating_entry(chatID)
-    entry.tags = update.message.text[6:].split(',')
+    entry.tag_list = update.message.text[6:].split(',')
 
     sendReply(update, context)
 

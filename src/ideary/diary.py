@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 
 
 class Storabale:
@@ -17,13 +18,16 @@ class Storabale:
 
 
 class DiaryEntry(Storabale):
-    def __init__(self, number: int, text: str, timestamp: datetime.datetime, diary_id, _id=None, tagList: [] = [],
+    def __init__(self, number: int, text: str, timestamp: datetime.datetime, diary_id, _id=None,
+                 tag_list: List[str] = None,
                  image: str = ''):
+        if tag_list is None:
+            tag_list = []
         self.number = number
         self.text = text
         self.timestamp = timestamp
         self.diary_id = diary_id
-        self.tagList = tagList
+        self.tag_list = tag_list
         self.image = image
         super().__init__()
 
