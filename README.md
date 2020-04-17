@@ -33,3 +33,5 @@ telegram:
 
 # Playground
 * Resize large images
+* Natural dialogs
+* Context stack

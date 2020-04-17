@@ -1,8 +1,22 @@
 import datetime
 
 
-class DiaryEntry:
+class Storabale:
+    def __init__(self):
+        self._known_fields = set(self.__dict__.keys())
 
+    def __setattr__(self, key, value):
+        if hasattr(self, '_known_fields') and key not in self._known_fields:
+            raise TypeError('cannot set unknown field `%s`' % key)
+        return super().__setattr__(key, value)
+
+    def storage_state(self):
+        d = self.__dict__.copy()
+        del d['_known_fields']
+        return d
+
+
+class DiaryEntry(Storabale):
     def __init__(self, number: int, text: str, timestamp: datetime.datetime, diary_id, _id=None, tagList: [] = [],
                  image: str = ''):
         self.number = number
@@ -11,6 +25,7 @@ class DiaryEntry:
         self.diary_id = diary_id
         self.tagList = tagList
         self.image = image
+        super().__init__()
 
     def __str__(self):
         return f"#{self.number}: {self.text} @{self.timestamp} (D{self.diary_id})"
@@ -32,7 +47,7 @@ class Diary:
         entry = storage.get_latest_entry(self.diary_id)
         return (entry.number + 1) if entry else 1
 
-    def get_entry(self, number:int) -> DiaryEntry:
+    def get_entry(self, number: int) -> DiaryEntry:
         import src.ideary.storage as storage
         return storage.read_entry(diary_id=self.diary_id, number=number)
 

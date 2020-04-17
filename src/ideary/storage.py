@@ -32,7 +32,7 @@ def get_user_diary(user_id) -> Diary:
 def write_entry(entry: DiaryEntry, diary_id):
     return db.ideary.diary_entry.update_one(
         filter=dict(diary_id=diary_id, number=entry.number),
-        update={"$set": entry.__dict__},
+        update={"$set": entry.storage_state()},
         upsert=True
     )
 

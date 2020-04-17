@@ -181,7 +181,7 @@ def saveEntry(update, context, callData):
     chat_id = update.effective_chat.id
     entry = submit_creating_entry(chat_id, context=context)
     if not entry:
-        context.bot.send_message('What would you like to add?')
+        context.bot.send_message(text='What would you like to add?')
 
 
 actionList['saveEntry'] = saveEntry
