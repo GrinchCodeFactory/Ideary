@@ -32,7 +32,7 @@ class Diary:
         entry = storage.get_latest_entry(self.diary_id)
         return (entry.number + 1) if entry else 1
 
-    def get_entry(self, number):
+    def get_entry(self, number:int) -> DiaryEntry:
         import src.ideary.storage as storage
         return storage.read_entry(diary_id=self.diary_id, number=number)
 
