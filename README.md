@@ -21,9 +21,9 @@ db.createUser(
 File `~/ideary.yaml`:
 ```yaml
 mongodb: 
-  host: mongo.fabi.me
+  host: mongo.example.com
   usr: ideary
-  pw: boumoosion
+  pw: whatevaa
   
 telegram: 
   token: abc
