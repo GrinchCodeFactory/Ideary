@@ -9,7 +9,7 @@ use admin
 db.createUser(
   {
     user: "ideary",
-    pwd: "boumoosion",
+    pwd: "whatevaa",
     roles: [ 
         { role: "readWrite", db: "ideary" }
     ]
